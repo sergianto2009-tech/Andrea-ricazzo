@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Andrea Ricupero</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Poppins',sans-serif;
+  background:linear-gradient(135deg,#0f172a,#020617);
+  color:white;
+}
+
+header{
+  padding:30px;
+  text-align:center;
+  font-size:36px;
+  font-weight:700;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
+}
+
+.container{
+  max-width:1100px;
+  margin:40px auto;
+  padding:20px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:25px;
+}
+
+.card{
+  background:rgba(255,255,255,0.05);
+  border-radius:20px;
+  padding:20px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:translateY(-5px);
+}
+
+h2{margin-bottom:10px}
+
+textarea{
+  width:100%;
+  height:120px;
+  border-radius:12px;
+  border:none;
+  padding:10px;
+}
+
+input[type=file]{margin-top:10px}
+
+.preview img{
+  width:100%;
+  border-radius:15px;
+  margin-top:10px;
+}
+
+button{
+  margin-top:15px;
+  padding:10px 18px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+  background:#22c55e;
+}
+
+.gallery{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+  gap:10px;
+  margin-top:15px;
+}
+
+.gallery img{
+  width:100%;
+  border-radius:10px;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.gallery img:hover{transform:scale(1.05)}
+
+.profile{
+  text-align:center;
+}
+
+.avatar{
+  width:120px;
+  height:120px;
+  border-radius:50%;
+  object-fit:cover;
+  border:3px solid white;
+}
+
+.stats{
+  display:flex;
+  justify-content:space-around;
+  margin-top:15px;
+}
+
+.stat{font-size:14px}
+
+.toggle{
+  position:fixed;
+  top:20px;
+  right:20px;
+  cursor:pointer;
+}
+
+.light{
+  background:#f1f5f9;
+  color:black;
+}
+
+.light .card{background:white;color:black}
+
+@media(max-width:800px){
+  .grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="toggle" onclick="toggleTheme()">🌓</div>
+
+<header>Andrea Ricupero</header>
+
+<div class="container">
+
+<div class="grid">
+
+<div class="card">
+<h2>Profilo 👤</h2>
+<div class="profile">
+<img id="avatar" class="avatar" src="">
+<input type="file" id="avatarInput">
+</div>
+</div>
+
+<div class="card">
+<h2>Descrizione ✍️</h2>
+<textarea id="desc" placeholder="Scrivi qualcosa..."></textarea>
+<button onclick="saveProfile()">Salva Profilo</button>
+</div>
+
+<div class="card">
+<h2>Carica immagini 📸</h2>
+<input type="file" id="multiUpload" multiple>
+<div class="gallery" id="gallery"></div>
+</div>
+
+<div class="card">
+<h2>Dati salvati 💾</h2>
+<div id="output"></div>
+<button onclick="clearAll()">Cancella tutto</button>
+</div>
+
+</div>
+
+</div>
+
+<script>
+let avatarData = null;
+let galleryData = [];
+
+const avatarInput = document.getElementById('avatarInput');
+const avatar = document.getElementById('avatar');
+
+avatarInput.addEventListener('change', e=>{
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = e=>{
+    avatar.src = e.target.result;
+    avatarData = e.target.result;
+  }
+  reader.readAsDataURL(file);
+});
+
+const multiUpload = document.getElementById('multiUpload');
+const gallery = document.getElementById('gallery');
+
+multiUpload.addEventListener('change', e=>{
+  [...e.target.files].forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      galleryData.push(e.target.result);
+      renderGallery();
+    }
+    reader.readAsDataURL(file);
+  });
+});
+
+function renderGallery(){
+  gallery.innerHTML = '';
+  galleryData.forEach(img=>{
+    const el = document.createElement('img');
+    el.src = img;
+    gallery.appendChild(el);
+  });
+}
+
+function saveProfile(){
+  const data = {
+    avatar: avatarData,
+    desc: document.getElementById('desc').value,
+    gallery: galleryData
+  }
+  localStorage.setItem('profiloAdvanced', JSON.stringify(data));
+  loadProfile();
+}
+
+function loadProfile(){
+  const data = JSON.parse(localStorage.getItem('profiloAdvanced'));
+  if(!data) return;
+
+  document.getElementById('output').innerHTML = `
+    <p>${data.desc}</p>
+  `;
+
+  if(data.avatar){
+    avatar.src = data.avatar;
+  }
+
+  galleryData = data.gallery || [];
+  renderGallery();
+}
+
+function clearAll(){
+  localStorage.removeItem('profiloAdvanced');
+  location.reload();
+}
+
+function toggleTheme(){
+  document.body.classList.toggle('light');
+}
+
+loadProfile();
+</script>
+
+</body>
+</html>
